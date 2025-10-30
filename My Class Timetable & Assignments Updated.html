@@ -615,25 +615,47 @@
         function loadClasses() {
             const saved = localStorage.getItem('myClasses');
             if (saved) {
-                return JSON.parse(saved);
+                const parsedClasses = JSON.parse(saved);
+                // Check if it's old format (object with day as key)
+                // Convert to new format if needed
+                if (parsedClasses && typeof parsedClasses === 'object') {
+                    const firstKey = Object.keys(parsedClasses)[0];
+                    if (firstKey && parsedClasses[firstKey] && !Array.isArray(parsedClasses[firstKey])) {
+                        // Old format detected, convert to new format
+                        const newFormat = {};
+                        Object.keys(parsedClasses).forEach(dayKey => {
+                            newFormat[dayKey] = [{
+                                id: Date.now() + Math.random(), // Generate unique ID
+                                day: parsedClasses[dayKey].day,
+                                time: parsedClasses[dayKey].time,
+                                subject: parsedClasses[dayKey].subject
+                            }];
+                        });
+                        return newFormat;
+                    }
+                }
+                return parsedClasses;
             } else {
-                // Default classes
+                // Default classes - now as arrays
                 return {
-                    1: {
+                    1: [{
+                        id: Date.now() + 1,
                         day: 'සඳුදා',
                         time: '8:30 AM',
                         subject: 'Entrepreneurship and Small Business Management'
-                    },
-                    4: {
+                    }],
+                    4: [{
+                        id: Date.now() + 2,
                         day: 'බ්‍රහස්පතින්දා',
                         time: '7:00 PM',
                         subject: 'Professional Practices in ICT'
-                    },
-                    5: {
+                    }],
+                    5: [{
+                        id: Date.now() + 3,
                         day: 'සිකුරාදා',
                         time: '7:00 PM - 9:00 PM',
                         subject: 'Microservices and Cloud Computing'
-                    }
+                    }]
                 };
             }
         }
@@ -673,22 +695,26 @@
 
         function addClass(event) {
             event.preventDefault();
-            
+
             const day = document.getElementById('daySelect').value;
             const time = document.getElementById('timeInput').value;
             const subject = document.getElementById('subjectInput').value;
 
-            // Check if class already exists for this day
-            if (classes[day]) {
-                alert('මේ දවසට දැනටමත් class එකක් තියෙනවා! ඒක delete කරල අලුත් එක add කරන්න.');
-                return;
-            }
-
-            classes[day] = {
+            // Create new class object with unique ID
+            const newClass = {
+                id: Date.now() + Math.random(), // Unique ID for deletion
                 day: dayNames[day],
                 time: time,
                 subject: subject
             };
+
+            // Initialize array for this day if it doesn't exist
+            if (!classes[day]) {
+                classes[day] = [];
+            }
+
+            // Add class to the array for this day
+            classes[day].push(newClass);
 
             // Save to localStorage
             saveClasses();
@@ -697,7 +723,7 @@
             document.getElementById('daySelect').value = '';
             document.getElementById('timeInput').value = '';
             document.getElementById('subjectInput').value = '';
-            
+
             toggleAddForm();
             updateDisplay();
         }
@@ -736,9 +762,17 @@
             renderAssignments();
         }
 
-        function deleteClass(day) {
+        function deleteClass(day, classId) {
             if (confirm('ඔයා මේ class එක delete කරන්න ඕනද?')) {
-                delete classes[day];
+                if (classes[day]) {
+                    // Filter out the class with the matching ID
+                    classes[day] = classes[day].filter(c => c.id !== classId);
+
+                    // If no classes left for this day, remove the day key
+                    if (classes[day].length === 0) {
+                        delete classes[day];
+                    }
+                }
                 saveClasses();
                 updateDisplay();
             }
@@ -876,97 +910,115 @@
             }
 
             sortedDays.forEach(day => {
-                const classInfo = classes[day];
-                const card = document.createElement('div');
-                card.className = 'class-card';
-                card.id = 'day-' + day;
-                
-                card.innerHTML = `
-                    <button class="delete-btn" onclick="deleteClass('${day}')">🗑️ Delete</button>
-                    <div class="day-name">
-                        📅 ${classInfo.day} (${dayNamesEn[day]})
-                    </div>
-                    <div class="class-time-small">🕗 ${classInfo.time}</div>
-                    <div class="class-subject-small">${classInfo.subject}</div>
-                `;
-                
-                classList.appendChild(card);
+                const dayClasses = classes[day];
+
+                // Loop through all classes for this day
+                dayClasses.forEach((classInfo, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'class-card';
+                    card.id = 'day-' + day + '-class-' + classInfo.id;
+
+                    card.innerHTML = `
+                        <button class="delete-btn" onclick="deleteClass('${day}', ${classInfo.id})">🗑️ Delete</button>
+                        <div class="day-name">
+                            📅 ${classInfo.day} (${dayNamesEn[day]})
+                        </div>
+                        <div class="class-time-small">🕗 ${classInfo.time}</div>
+                        <div class="class-subject-small">${classInfo.subject}</div>
+                    `;
+
+                    classList.appendChild(card);
+                });
             });
         }
 
         function updateReminder() {
             const now = new Date();
             const dayOfWeek = now.getDay();
-            
+
             document.getElementById('currentDate').textContent = dayNames[dayOfWeek] + ' - ' + now.toLocaleDateString('en-GB');
-            
-            const todayClass = classes[dayOfWeek];
+
+            const todayClasses = classes[dayOfWeek];
             const reminderDiv = document.getElementById('todayReminder');
             const reminderIcon = document.getElementById('reminderIcon');
             const reminderTitle = document.getElementById('reminderTitle');
-            
+
             // Remove all highlights
             document.querySelectorAll('.class-card').forEach(card => {
                 card.classList.remove('highlight');
                 const badge = card.querySelector('.current-badge');
                 if (badge) badge.remove();
             });
-            
-            if (todayClass) {
+
+            if (todayClasses && todayClasses.length > 0) {
                 reminderIcon.textContent = '🔔';
-                reminderTitle.textContent = 'අද ඔයාට Class එකක් තියෙනවා!';
-                
-                reminderDiv.innerHTML = `
-                    <div class="today-class">
-                        <div class="class-time">⏰ ${todayClass.time}</div>
-                        <div class="class-subject">${todayClass.subject}</div>
-                    </div>
-                `;
-                
-                // Highlight in timetable
-                const todayCard = document.getElementById('day-' + dayOfWeek);
-                if (todayCard) {
-                    todayCard.classList.add('highlight');
-                    todayCard.querySelector('.day-name').innerHTML += 
-                        '<span class="current-badge">NOW</span>';
-                }
-                
+                reminderTitle.textContent = todayClasses.length === 1
+                    ? 'අද ඔයාට Class එකක් තියෙනවා!'
+                    : `අද ඔයාට Classes ${todayClasses.length} ක් තියෙනවා!`;
+
+                // Display all today's classes
+                let classesHtml = '';
+                todayClasses.forEach((classInfo, index) => {
+                    classesHtml += `
+                        <div class="today-class" style="${index > 0 ? 'margin-top: 10px;' : ''}">
+                            <div class="class-time">⏰ ${classInfo.time}</div>
+                            <div class="class-subject">${classInfo.subject}</div>
+                        </div>
+                    `;
+
+                    // Highlight each today's class in timetable
+                    const todayCard = document.getElementById('day-' + dayOfWeek + '-class-' + classInfo.id);
+                    if (todayCard) {
+                        todayCard.classList.add('highlight');
+                        const dayNameDiv = todayCard.querySelector('.day-name');
+                        if (dayNameDiv && !dayNameDiv.querySelector('.current-badge')) {
+                            dayNameDiv.innerHTML += '<span class="current-badge">NOW</span>';
+                        }
+                    }
+                });
+
+                reminderDiv.innerHTML = classesHtml;
+
                 // Check for tomorrow
                 const tomorrowDay = (dayOfWeek + 1) % 7;
-                const tomorrowClass = classes[tomorrowDay];
-                
-                if (tomorrowClass) {
+                const tomorrowClasses = classes[tomorrowDay];
+
+                if (tomorrowClasses && tomorrowClasses.length > 0) {
+                    const tomorrowClassText = tomorrowClasses.map(c => `${c.time} - ${c.subject}`).join('<br>');
                     reminderDiv.innerHTML += `
                         <div class="tomorrow-reminder">
-                            <strong>හෙට:</strong> ${tomorrowClass.time} - ${tomorrowClass.subject}
+                            <strong>හෙට:</strong><br>${tomorrowClassText}
                         </div>
                     `;
                 }
             } else {
                 reminderIcon.textContent = '😊';
                 reminderTitle.textContent = 'අද Class නැහැ!';
-                
+
                 // Find next class
                 let nextDay = (dayOfWeek + 1) % 7;
                 let daysChecked = 0;
-                let nextClass = null;
-                
-                while (daysChecked < 7 && !nextClass) {
-                    if (classes[nextDay]) {
-                        nextClass = classes[nextDay];
+                let nextClasses = null;
+                let nextDayName = '';
+
+                while (daysChecked < 7 && !nextClasses) {
+                    if (classes[nextDay] && classes[nextDay].length > 0) {
+                        nextClasses = classes[nextDay];
+                        nextDayName = dayNames[nextDay];
                         break;
                     }
                     nextDay = (nextDay + 1) % 7;
                     daysChecked++;
                 }
-                
-                if (nextClass) {
+
+                if (nextClasses) {
+                    const nextClassText = nextClasses.map(c => `${c.time} - ${c.subject}`).join('<br>');
                     reminderDiv.innerHTML = `
                         <div class="no-class">
                             <p style="font-size: 1.5em; margin-bottom: 15px;">අද ඔයාට classes නැහැ! 🎉</p>
                             <div class="tomorrow-reminder">
-                                <strong>ඊළඟ Class:</strong> ${nextClass.day}<br>
-                                ${nextClass.time} - ${nextClass.subject}
+                                <strong>ඊළඟ Class:</strong> ${nextDayName}<br>
+                                ${nextClassText}
                             </div>
                         </div>
                     `;
