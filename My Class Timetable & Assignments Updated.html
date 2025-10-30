@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<!-- saved from url=(0080)file:///C:/Users/Vikasitha/Downloads/Online_Class_Schedule_With_Assignments.html -->
+<html lang="si"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Class Timetable &amp; Assignments</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .reminder-box {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .reminder-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .reminder-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        
+        .reminder-title {
+            font-size: 1.8em;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .reminder-subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .today-class {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: 0 10px 30px rgba(240, 147, 251, 0.4);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.02);
+            }
+        }
+        
+        .class-time {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .class-subject {
+            font-size: 1.3em;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .tomorrow-reminder {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 15px;
+            text-align: center;
+        }
+        
+        .no-class {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            font-size: 1.2em;
+        }
+        
+        .timetable-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.7s ease;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            text-align: center;
+            color: #667eea;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .class-card {
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+            background: #f8f9fa;
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+        
+        .class-card:hover {
+            transform: translateX(5px);
+        }
+        
+        .class-card.highlight {
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+            border-left-width: 8px;
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.3);
+        }
+        
+        .day-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .class-time-small {
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .class-subject-small {
+            color: #444;
+            font-weight: 500;
+        }
+        
+        .current-badge {
+            display: inline-block;
+            background: #ff4757;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.7em;
+            margin-left: 10px;
+            animation: blink 1.5s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s;
+        }
+
+        .delete-btn:hover {
+            background: #ff3838;
+        }
+
+        .add-class-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.9s ease;
+            margin-bottom: 20px;
+        }
+
+        .add-class-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2em;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+            margin-bottom: 20px;
+        }
+
+        .add-class-btn:hover {
+            transform: scale(1.02);
+        }
+
+        .add-class-form {
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .add-class-form.show {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .submit-btn {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: scale(1.02);
+        }
+
+        .cancel-btn {
+            flex: 1;
+            padding: 12px;
+            background: #ddd;
+            color: #333;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .cancel-btn:hover {
+            background: #ccc;
+        }
+
+        .storage-info {
+            text-align: center;
+            color: white;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Assignment Styles */
+        .assignments-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideIn 1.1s ease;
+            margin-bottom: 20px;
+        }
+
+        .assignment-card {
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            border-left: 5px solid #f5576c;
+            background: #f8f9fa;
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .assignment-card:hover {
+            transform: translateX(5px);
+        }
+
+        .assignment-card.overdue {
+            background: linear-gradient(135deg, #ffe5e5 0%, #ffcccc 100%);
+            border-left-color: #ff4757;
+        }
+
+        .assignment-card.upcoming {
+            background: linear-gradient(135deg, #fff9e5 0%, #ffe5cc 100%);
+            border-left-color: #ffa502;
+        }
+
+        .assignment-card.completed {
+            background: linear-gradient(135deg, #e5ffe5 0%, #ccffcc 100%);
+            border-left-color: #2ed573;
+            opacity: 0.7;
+        }
+
+        .assignment-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .assignment-details {
+            color: #666;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .assignment-deadline {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .deadline-overdue {
+            background: #ff4757;
+            color: white;
+        }
+
+        .deadline-upcoming {
+            background: #ffa502;
+            color: white;
+        }
+
+        .deadline-normal {
+            background: #2ed573;
+            color: white;
+        }
+
+        .complete-btn {
+            position: absolute;
+            top: 10px;
+            right: 120px;
+            background: #2ed573;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s;
+        }
+
+        .complete-btn:hover {
+            background: #26de81;
+        }
+
+        .complete-btn.completed {
+            background: #95afc0;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="reminder-box">
+            <div class="reminder-header">
+                <div class="reminder-icon" id="reminderIcon">😊</div>
+                <div class="reminder-title" id="reminderTitle">අද Class නැහැ!</div>
+                <div class="reminder-subtitle" id="currentDate">බදාදා - 22/10/2025</div>
+            </div>
+            
+            <div id="todayReminder">
+                        <div class="no-class">
+                            <p style="font-size: 1.5em; margin-bottom: 15px;">අද ඔයාට classes නැහැ! 🎉</p>
+                            <div class="tomorrow-reminder">
+                                <strong>ඊළඟ Class:</strong> බ්‍රහස්පතින්දා<br>
+                                7:00 PM - Professional Practices in ICT
+                            </div>
+                        </div>
+                    </div>
+        </div>
+
+        <!-- Classes Section -->
+        <div class="timetable-section">
+            <div class="section-title">📅 Class Timetable</div>
+            <div id="classList"><div class="class-card" id="day-0">
+                    <button class="delete-btn" onclick="deleteClass(&#39;0&#39;)">🗑️ Delete</button>
+                    <div class="day-name">
+                        📅 ඉරිදා (Sunday)
+                    </div>
+                    <div class="class-time-small">🕗 9.00AM - 11.00AM</div>
+                    <div class="class-subject-small">Microservices https://learn.zoom.us/j/98027757590?pwd=1g01EITU1QglEGLh0GdNg5n5ieF5hZ.1</div>
+                </div><div class="class-card" id="day-1">
+                    <button class="delete-btn" onclick="deleteClass(&#39;1&#39;)">🗑️ Delete</button>
+                    <div class="day-name">
+                        📅 සඳුදා (Monday)
+                    </div>
+                    <div class="class-time-small">🕗 8:30 AM</div>
+                    <div class="class-subject-small">Entrepreneurship and Small Business Management</div>
+                </div><div class="class-card" id="day-4">
+                    <button class="delete-btn" onclick="deleteClass(&#39;4&#39;)">🗑️ Delete</button>
+                    <div class="day-name">
+                        📅 බ්‍රහස්පතින්දා (Thursday)
+                    </div>
+                    <div class="class-time-small">🕗 7:00 PM</div>
+                    <div class="class-subject-small">Professional Practices in ICT</div>
+                </div><div class="class-card" id="day-5">
+                    <button class="delete-btn" onclick="deleteClass(&#39;5&#39;)">🗑️ Delete</button>
+                    <div class="day-name">
+                        📅 සිකුරාදා (Friday)
+                    </div>
+                    <div class="class-time-small">🕗 7:00 PM - 9:00 PM</div>
+                    <div class="class-subject-small">Microservices and Cloud Computing</div>
+                </div><div class="class-card" id="day-6">
+                    <button class="delete-btn" onclick="deleteClass(&#39;6&#39;)">🗑️ Delete</button>
+                    <div class="day-name">
+                        📅 සෙනසුරාදා (Saturday)
+                    </div>
+                    <div class="class-time-small">🕗 10.30AM - 12.30PM</div>
+                    <div class="class-subject-small">Professional Practices</div>
+                </div></div>
+        </div>
+
+        <!-- Add Class Section -->
+        <div class="add-class-section">
+            <button class="add-class-btn" onclick="toggleAddForm()">
+                ➕ අලුත් Class එකක් එකතු කරන්න
+            </button>
+            
+            <form id="addClassForm" class="add-class-form" onsubmit="addClass(event)">
+                <div class="form-group">
+                    <label>දවස (Day)</label>
+                    <select id="daySelect" required="">
+                        <option value="">දවසක් තෝරන්න</option>
+                        <option value="0">ඉරිදා (Sunday)</option>
+                        <option value="1">සඳුදා (Monday)</option>
+                        <option value="2">අඟහරුවාදා (Tuesday)</option>
+                        <option value="3">බදාදා (Wednesday)</option>
+                        <option value="4">බ්‍රහස්පතින්දා (Thursday)</option>
+                        <option value="5">සිකුරාදා (Friday)</option>
+                        <option value="6">සෙනසුරාදා (Saturday)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>වේලාව (Time)</label>
+                    <input type="text" id="timeInput" placeholder="උදා: 8:30 AM or 7:00 PM - 9:00 PM" required="">
+                </div>
+
+                <div class="form-group">
+                    <label>විෂයය (Subject)</label>
+                    <input type="text" id="subjectInput" placeholder="විෂයය ඇතුළත් කරන්න" required="">
+                </div>
+
+                <div class="form-buttons">
+                    <button type="submit" class="submit-btn">✓ එකතු කරන්න</button>
+                    <button type="button" class="cancel-btn" onclick="toggleAddForm()">✗ අවලංගු කරන්න</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Assignments Section -->
+        <div class="assignments-section">
+            <div class="section-title">📝 Assignment වල (My Assignments)</div>
+            
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="filterAssignments(&#39;all&#39;)">සියල්ල (All)</button>
+                <button class="tab-btn" onclick="filterAssignments(&#39;pending&#39;)">අවසන් කරන්න ඕන (Pending)</button>
+                <button class="tab-btn" onclick="filterAssignments(&#39;completed&#39;)">අවසන් කළ (Completed)</button>
+            </div>
+
+            <div id="assignmentsList"><div class="assignment-card">
+                    <button class="delete-btn" onclick="deleteAssignment(1761118943406)">🗑️ Delete</button>
+                    <button class="complete-btn " onclick="toggleCompleteAssignment(1761118943406)">
+                        ✓ සම්පූර්ණ කරන්න
+                    </button>
+                    <div class="assignment-title">
+                        📝  Assignment 01 - Designing and Modeling a Smart Agriculture Solution
+                    </div>
+                    <div class="assignment-details">📚 විෂයය: Emerging Technologies</div>
+                    <div class="assignment-details">📄 You are tasked with designing a smart agriculture solution for a hypothetical farm facing specific challenges and developing a basic conceptual model to support your design. This project will test your ability to research, analyze, integrate advanced technologies, and create a simple representation of your solution.</div>
+                    <div class="assignment-details">🗓️ Deadline: October 27, 2025 - 23:59</div>
+                    <span class="assignment-deadline deadline-normal">📅 6 දවස් ඉතිරි</span>
+                </div></div>
+
+            <button class="add-class-btn" onclick="toggleAddAssignmentForm()" style="margin-top: 20px;">
+                ➕ අලුත් Assignment එකක් එකතු කරන්න
+            </button>
+            
+            <form id="addAssignmentForm" class="add-class-form" onsubmit="addAssignment(event)">
+                <div class="form-group">
+                    <label>Assignment එකේ නම (Assignment Title)</label>
+                    <input type="text" id="assignmentTitleInput" placeholder="උදා: Database Design Project" required="">
+                </div>
+
+                <div class="form-group">
+                    <label>විෂයය (Subject)</label>
+                    <input type="text" id="assignmentSubjectInput" placeholder="විෂයය ඇතුළත් කරන්න" required="">
+                </div>
+
+                <div class="form-group">
+                    <label>විස්තරය (Description - Optional)</label>
+                    <input type="text" id="assignmentDescInput" placeholder="Assignment එක ගැන විස්තරයක්">
+                </div>
+
+                <div class="form-group">
+                    <label>Deadline දවස (Deadline Date)</label>
+                    <input type="date" id="assignmentDeadlineInput" required="">
+                </div>
+
+                <div class="form-group">
+                    <label>Deadline වේලාව (Deadline Time - Optional)</label>
+                    <input type="time" id="assignmentTimeInput">
+                </div>
+
+                <div class="form-buttons">
+                    <button type="submit" class="submit-btn">✓ එකතු කරන්න</button>
+                    <button type="button" class="cancel-btn" onclick="toggleAddAssignmentForm()">✗ අවලංගු කරන්න</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="storage-info">
+            💾 ඔයාගේ classes සහ assignments browser එකේ save වෙනවා - refresh කළත් නැති වෙන්නේ නැහැ!
+        </div>
+    </div>
+    
+    <script>
+        const dayNames = ['ඉරිදා', 'සඳුදා', 'අඟහරුවාදා', 'බදාදා', 'බ්‍රහස්පතින්දා', 'සිකුරාදා', 'සෙනසුරාදා'];
+        const dayNamesEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+        let currentAssignmentFilter = 'all';
+
+        // Load classes from localStorage or use defaults
+        function loadClasses() {
+            const saved = localStorage.getItem('myClasses');
+            if (saved) {
+                return JSON.parse(saved);
+            } else {
+                // Default classes
+                return {
+                    1: {
+                        day: 'සඳුදා',
+                        time: '8:30 AM',
+                        subject: 'Entrepreneurship and Small Business Management'
+                    },
+                    4: {
+                        day: 'බ්‍රහස්පතින්දා',
+                        time: '7:00 PM',
+                        subject: 'Professional Practices in ICT'
+                    },
+                    5: {
+                        day: 'සිකුරාදා',
+                        time: '7:00 PM - 9:00 PM',
+                        subject: 'Microservices and Cloud Computing'
+                    }
+                };
+            }
+        }
+
+        // Load assignments from localStorage
+        function loadAssignments() {
+            const saved = localStorage.getItem('myAssignments');
+            if (saved) {
+                return JSON.parse(saved);
+            } else {
+                return [];
+            }
+        }
+
+        // Save classes to localStorage
+        function saveClasses() {
+            localStorage.setItem('myClasses', JSON.stringify(classes));
+        }
+
+        // Save assignments to localStorage
+        function saveAssignments() {
+            localStorage.setItem('myAssignments', JSON.stringify(assignments));
+        }
+
+        let classes = loadClasses();
+        let assignments = loadAssignments();
+
+        function toggleAddForm() {
+            const form = document.getElementById('addClassForm');
+            form.classList.toggle('show');
+        }
+
+        function toggleAddAssignmentForm() {
+            const form = document.getElementById('addAssignmentForm');
+            form.classList.toggle('show');
+        }
+
+        function addClass(event) {
+            event.preventDefault();
+            
+            const day = document.getElementById('daySelect').value;
+            const time = document.getElementById('timeInput').value;
+            const subject = document.getElementById('subjectInput').value;
+
+            // Check if class already exists for this day
+            if (classes[day]) {
+                alert('මේ දවසට දැනටමත් class එකක් තියෙනවා! ඒක delete කරල අලුත් එක add කරන්න.');
+                return;
+            }
+
+            classes[day] = {
+                day: dayNames[day],
+                time: time,
+                subject: subject
+            };
+
+            // Save to localStorage
+            saveClasses();
+
+            // Reset form
+            document.getElementById('daySelect').value = '';
+            document.getElementById('timeInput').value = '';
+            document.getElementById('subjectInput').value = '';
+            
+            toggleAddForm();
+            updateDisplay();
+        }
+
+        function addAssignment(event) {
+            event.preventDefault();
+            
+            const title = document.getElementById('assignmentTitleInput').value;
+            const subject = document.getElementById('assignmentSubjectInput').value;
+            const description = document.getElementById('assignmentDescInput').value;
+            const deadline = document.getElementById('assignmentDeadlineInput').value;
+            const time = document.getElementById('assignmentTimeInput').value;
+
+            const assignment = {
+                id: Date.now(),
+                title: title,
+                subject: subject,
+                description: description,
+                deadline: deadline,
+                time: time,
+                completed: false,
+                createdAt: new Date().toISOString()
+            };
+
+            assignments.push(assignment);
+            saveAssignments();
+
+            // Reset form
+            document.getElementById('assignmentTitleInput').value = '';
+            document.getElementById('assignmentSubjectInput').value = '';
+            document.getElementById('assignmentDescInput').value = '';
+            document.getElementById('assignmentDeadlineInput').value = '';
+            document.getElementById('assignmentTimeInput').value = '';
+            
+            toggleAddAssignmentForm();
+            renderAssignments();
+        }
+
+        function deleteClass(day) {
+            if (confirm('ඔයා මේ class එක delete කරන්න ඕනද?')) {
+                delete classes[day];
+                saveClasses();
+                updateDisplay();
+            }
+        }
+
+        function deleteAssignment(id) {
+            if (confirm('ඔයා මේ assignment එක delete කරන්න ඕනද?')) {
+                assignments = assignments.filter(a => a.id !== id);
+                saveAssignments();
+                renderAssignments();
+            }
+        }
+
+        function toggleCompleteAssignment(id) {
+            const assignment = assignments.find(a => a.id === id);
+            if (assignment) {
+                assignment.completed = !assignment.completed;
+                saveAssignments();
+                renderAssignments();
+            }
+        }
+
+        function getDeadlineStatus(deadline, time) {
+            const now = new Date();
+            const deadlineDate = new Date(deadline);
+            
+            if (time) {
+                const [hours, minutes] = time.split(':');
+                deadlineDate.setHours(parseInt(hours), parseInt(minutes));
+            } else {
+                deadlineDate.setHours(23, 59, 59);
+            }
+
+            const diffTime = deadlineDate - now;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffTime < 0) {
+                return { status: 'overdue', text: '⚠️ Overdue', class: 'deadline-overdue' };
+            } else if (diffDays <= 3) {
+                return { status: 'upcoming', text: `⏰ ${diffDays} දවස් ඉතිරි`, class: 'deadline-upcoming' };
+            } else {
+                return { status: 'normal', text: `📅 ${diffDays} දවස් ඉතිරි`, class: 'deadline-normal' };
+            }
+        }
+
+        function filterAssignments(filter) {
+            currentAssignmentFilter = filter;
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            renderAssignments();
+        }
+
+        function renderAssignments() {
+            const assignmentsList = document.getElementById('assignmentsList');
+            assignmentsList.innerHTML = '';
+
+            let filteredAssignments = assignments;
+            
+            if (currentAssignmentFilter === 'pending') {
+                filteredAssignments = assignments.filter(a => !a.completed);
+            } else if (currentAssignmentFilter === 'completed') {
+                filteredAssignments = assignments.filter(a => a.completed);
+            }
+
+            // Sort by deadline
+            filteredAssignments.sort((a, b) => {
+                if (a.completed && !b.completed) return 1;
+                if (!a.completed && b.completed) return -1;
+                return new Date(a.deadline) - new Date(b.deadline);
+            });
+
+            if (filteredAssignments.length === 0) {
+                assignmentsList.innerHTML = '<div class="no-class">තවම assignments නැහැ! ඉහත button එකෙන් assignments එකතු කරන්න.</div>';
+                return;
+            }
+
+            filteredAssignments.forEach(assignment => {
+                const deadlineInfo = getDeadlineStatus(assignment.deadline, assignment.time);
+                const card = document.createElement('div');
+                
+                let cardClass = 'assignment-card';
+                if (assignment.completed) {
+                    cardClass += ' completed';
+                } else if (deadlineInfo.status === 'overdue') {
+                    cardClass += ' overdue';
+                } else if (deadlineInfo.status === 'upcoming') {
+                    cardClass += ' upcoming';
+                }
+                
+                card.className = cardClass;
+                
+                const deadlineDate = new Date(assignment.deadline);
+                const formattedDate = deadlineDate.toLocaleDateString('si-LK', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+                
+                const timeStr = assignment.time ? ` - ${assignment.time}` : '';
+                
+                card.innerHTML = `
+                    <button class="delete-btn" onclick="deleteAssignment(${assignment.id})">🗑️ Delete</button>
+                    <button class="complete-btn ${assignment.completed ? 'completed' : ''}" 
+                            onclick="toggleCompleteAssignment(${assignment.id})">
+                        ${assignment.completed ? '✓ අවසන්' : '✓ සම්පූර්ණ කරන්න'}
+                    </button>
+                    <div class="assignment-title">
+                        ${assignment.completed ? '✅ ' : '📝 '} ${assignment.title}
+                    </div>
+                    <div class="assignment-details">📚 විෂයය: ${assignment.subject}</div>
+                    ${assignment.description ? `<div class="assignment-details">📄 ${assignment.description}</div>` : ''}
+                    <div class="assignment-details">🗓️ Deadline: ${formattedDate}${timeStr}</div>
+                    ${!assignment.completed ? `<span class="assignment-deadline ${deadlineInfo.class}">${deadlineInfo.text}</span>` : ''}
+                `;
+                
+                assignmentsList.appendChild(card);
+            });
+        }
+
+        function renderClassList() {
+            const classList = document.getElementById('classList');
+            classList.innerHTML = '';
+
+            // Sort by day
+            const sortedDays = Object.keys(classes).sort((a, b) => parseInt(a) - parseInt(b));
+
+            if (sortedDays.length === 0) {
+                classList.innerHTML = '<div class="no-class">තවම classes නැහැ! ඉහත button එකෙන් classes එකතු කරන්න.</div>';
+                return;
+            }
+
+            sortedDays.forEach(day => {
+                const classInfo = classes[day];
+                const card = document.createElement('div');
+                card.className = 'class-card';
+                card.id = 'day-' + day;
+                
+                card.innerHTML = `
+                    <button class="delete-btn" onclick="deleteClass('${day}')">🗑️ Delete</button>
+                    <div class="day-name">
+                        📅 ${classInfo.day} (${dayNamesEn[day]})
+                    </div>
+                    <div class="class-time-small">🕗 ${classInfo.time}</div>
+                    <div class="class-subject-small">${classInfo.subject}</div>
+                `;
+                
+                classList.appendChild(card);
+            });
+        }
+
+        function updateReminder() {
+            const now = new Date();
+            const dayOfWeek = now.getDay();
+            
+            document.getElementById('currentDate').textContent = dayNames[dayOfWeek] + ' - ' + now.toLocaleDateString('en-GB');
+            
+            const todayClass = classes[dayOfWeek];
+            const reminderDiv = document.getElementById('todayReminder');
+            const reminderIcon = document.getElementById('reminderIcon');
+            const reminderTitle = document.getElementById('reminderTitle');
+            
+            // Remove all highlights
+            document.querySelectorAll('.class-card').forEach(card => {
+                card.classList.remove('highlight');
+                const badge = card.querySelector('.current-badge');
+                if (badge) badge.remove();
+            });
+            
+            if (todayClass) {
+                reminderIcon.textContent = '🔔';
+                reminderTitle.textContent = 'අද ඔයාට Class එකක් තියෙනවා!';
+                
+                reminderDiv.innerHTML = `
+                    <div class="today-class">
+                        <div class="class-time">⏰ ${todayClass.time}</div>
+                        <div class="class-subject">${todayClass.subject}</div>
+                    </div>
+                `;
+                
+                // Highlight in timetable
+                const todayCard = document.getElementById('day-' + dayOfWeek);
+                if (todayCard) {
+                    todayCard.classList.add('highlight');
+                    todayCard.querySelector('.day-name').innerHTML += 
+                        '<span class="current-badge">NOW</span>';
+                }
+                
+                // Check for tomorrow
+                const tomorrowDay = (dayOfWeek + 1) % 7;
+                const tomorrowClass = classes[tomorrowDay];
+                
+                if (tomorrowClass) {
+                    reminderDiv.innerHTML += `
+                        <div class="tomorrow-reminder">
+                            <strong>හෙට:</strong> ${tomorrowClass.time} - ${tomorrowClass.subject}
+                        </div>
+                    `;
+                }
+            } else {
+                reminderIcon.textContent = '😊';
+                reminderTitle.textContent = 'අද Class නැහැ!';
+                
+                // Find next class
+                let nextDay = (dayOfWeek + 1) % 7;
+                let daysChecked = 0;
+                let nextClass = null;
+                
+                while (daysChecked < 7 && !nextClass) {
+                    if (classes[nextDay]) {
+                        nextClass = classes[nextDay];
+                        break;
+                    }
+                    nextDay = (nextDay + 1) % 7;
+                    daysChecked++;
+                }
+                
+                if (nextClass) {
+                    reminderDiv.innerHTML = `
+                        <div class="no-class">
+                            <p style="font-size: 1.5em; margin-bottom: 15px;">අද ඔයාට classes නැහැ! 🎉</p>
+                            <div class="tomorrow-reminder">
+                                <strong>ඊළඟ Class:</strong> ${nextClass.day}<br>
+                                ${nextClass.time} - ${nextClass.subject}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    reminderDiv.innerHTML = `
+                        <div class="no-class">
+                            <p style="font-size: 1.5em;">අද ඔයාට classes නැහැ! 🎉</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function updateDisplay() {
+            renderClassList();
+            renderAssignments();
+            updateReminder();
+        }
+        
+        // Initial render
+        updateDisplay();
+        
+        // Update every minute
+        setInterval(updateReminder, 60000);
+    </script>
+
+</body></html>
